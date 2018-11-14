@@ -6,10 +6,10 @@ edition = "2018"
 
 [dependencies]
 hex = "0.3"
-byteorder = "1"
+byteorder = {version = "1", features = ["i128"]}
 itertools = "0.7"
 
 failure = "0.1"
-rand = "0.6.0-pre.1"
+rand = "0.6"
 
 rust-crypto = "0.2"

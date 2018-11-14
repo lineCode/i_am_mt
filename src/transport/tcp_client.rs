@@ -47,7 +47,7 @@ impl TcpClient {
     }
 
     fn recv_package_abridged(&mut self) -> MyResult<Vec<u8>> {
-        let first_byte = self.stream.read_u8()? as u32;
+        let first_byte = u32::from(self.stream.read_u8()?);
 
         let length = if first_byte < 127 {
             first_byte as u32
