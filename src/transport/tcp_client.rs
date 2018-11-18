@@ -3,7 +3,9 @@ use std::{
     net::{SocketAddr, TcpStream},
 };
 
-use crate::utils::{MyResult, TlReadBytes, TlWriteBytes};
+use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
+
+use crate::utils::MyResult;
 
 pub struct TcpClient {
     stream: TcpStream,
@@ -22,7 +24,7 @@ impl TcpClient {
 
         match version {
             TransporterVersion::Intermediate => {
-                stream.write_u32(0xee_ee_ee_ee)?;
+                stream.write_u32::<LittleEndian>(0xee_ee_ee_ee)?;
             }
             TransporterVersion::Abridged => {
                 stream.write_u8(0xef)?;
@@ -32,10 +34,10 @@ impl TcpClient {
         Ok(TcpClient { stream, version })
     }
 
-    pub fn send_package(&mut self, payload: &[u8]) -> MyResult<()> {
+    pub fn send_package(&mut self, input: &[u8]) -> MyResult<()> {
         match self.version {
-            TransporterVersion::Intermediate => self.send_package_intermediate(payload),
-            TransporterVersion::Abridged => self.send_package_abridged(payload),
+            TransporterVersion::Intermediate => self.send_package_intermediate(input),
+            TransporterVersion::Abridged => self.send_package_abridged(input),
         }
     }
 
@@ -47,39 +49,41 @@ impl TcpClient {
     }
 
     fn recv_package_abridged(&mut self) -> MyResult<Vec<u8>> {
-        let first_byte = u32::from(self.stream.read_u8()?);
+        let first_byte = self.stream.read_u8()?;
 
         let length = if first_byte < 127 {
-            first_byte as u32
+            first_byte as usize
         } else {
-            self.stream.read_u24()?
+            self.stream.read_u24::<LittleEndian>()? as usize
         };
-        let mut buffer = vec![0u8; (length * 4) as usize];
+
+        let mut buffer = vec![0u8; length * 4];
         self.stream.read_exact(&mut buffer)?;
         Ok(buffer)
     }
 
     fn recv_package_intermediate(&mut self) -> MyResult<Vec<u8>> {
-        let length = self.stream.read_u32()?;
-        let mut buffer = vec![0u8; length as usize];
+        let length = self.stream.read_u32::<LittleEndian>()? as usize;
+        let mut buffer = vec![0u8; length];
         self.stream.read_exact(&mut buffer)?;
         Ok(buffer)
     }
 
-    fn send_package_abridged(&mut self, payload: &[u8]) -> MyResult<()> {
-        let size = (payload.len() / 4) as u32;
+    fn send_package_abridged(&mut self, input: &[u8]) -> MyResult<()> {
+        let size = (input.len() / 4) as u32;
         if size < 127 {
             self.stream.write_u8(size as u8)?;
         } else {
-            self.stream.write_u32(size << 8 | 127)?;
+            self.stream.write_u8(127)?;
+            self.stream.write_u24::<LittleEndian>(size)?;
         }
-        self.stream.write_all(payload)?;
+        self.stream.write_all(input)?;
         Ok(())
     }
 
-    fn send_package_intermediate(&mut self, payload: &[u8]) -> MyResult<()> {
-        self.stream.write_u32(payload.len() as u32)?;
-        self.stream.write_all(payload)?;
+    fn send_package_intermediate(&mut self, input: &[u8]) -> MyResult<()> {
+        self.stream.write_u32::<LittleEndian>(input.len() as u32)?;
+        self.stream.write_all(input)?;
         Ok(())
     }
 }

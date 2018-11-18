@@ -1,8 +1,10 @@
 use std::io::Write;
 
+use byteorder::{LittleEndian, WriteBytesExt};
+
 use i_am_mt::{
     transport::tcp_client::{TcpClient, TransporterVersion},
-    utils::{MyResult, TlWriteBytes},
+    utils::MyResult,
 };
 
 fn main() -> MyResult<()> {
@@ -59,10 +61,12 @@ impl PqReq {
     pub fn encode(&self) -> Vec<u8> {
         let mut result: Vec<u8> = Vec::new();
 
-        result.write_u64(self.auth_key_id).unwrap();
-        result.write_u64(self.message_id).unwrap();
-        result.write_u32(self.message_length).unwrap();
-        result.write_u32(self.constructor).unwrap();
+        result.write_u64::<LittleEndian>(self.auth_key_id).unwrap();
+        result.write_u64::<LittleEndian>(self.message_id).unwrap();
+        result
+            .write_u32::<LittleEndian>(self.message_length)
+            .unwrap();
+        result.write_u32::<LittleEndian>(self.constructor).unwrap();
         result.write_all(self.nonce.as_ref()).unwrap();
 
         result
