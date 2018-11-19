@@ -5,11 +5,10 @@ authors = ["DCjanus <DCjanus@dcjanus.com>"]
 edition = "2018"
 
 [dependencies]
+num = "0.2"
 hex = "0.3"
-byteorder = {version = "1", features = ["i128"]}
-itertools = "0.7"
-
-failure = "0.1"
 rand = "0.6"
-
-rust-crypto = "0.2"
+failure = "0.1"
+lazy_static = "1"
+byteorder = { version = "1", features = ["i128"] }
+openssl = { version = "0.10", features = ["vendored"] }
