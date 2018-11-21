@@ -1,0 +1,20 @@
+[package]
+name = "code_gen"
+version = "0.1.0"
+authors = ["DCjanus <DCjanus@dcjanus.com>"]
+edition = "2018"
+
+[dependencies]
+regex = "1"
+failure = "0.1"
+lazy_static = "1"
+
+heck = "0.3"
+itertools = "0.7"
+derive_more = "0.13"
+
+quote = "0.6"
+proc-macro2 = "0.4"
+
+serde_json = "1"
+serde = { version = "1", features = ["derive"] }

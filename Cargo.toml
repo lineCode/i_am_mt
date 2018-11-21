@@ -12,3 +12,8 @@ failure = "0.1"
 lazy_static = "1"
 byteorder = { version = "1", features = ["i128"] }
 openssl = { version = "0.10", features = ["vendored"] }
+
+[workspace]
+members = [
+    "code_gen"
+]
