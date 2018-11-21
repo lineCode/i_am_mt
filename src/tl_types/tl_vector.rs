@@ -37,7 +37,7 @@ fn test_read_tl_vector_int() {
         0x00, 0x03, 0x00, 0x00, 0x00,
     ];
     let mut cursor = Cursor::new(&buffer);
-    assert_eq!(vec![1, 2, 3], Vec::tl_read(&mut cursor).unwrap())
+    assert_eq!(vec![1, 2, 3], Vec::<i32>::tl_read(&mut cursor).unwrap())
 }
 
 #[test]
